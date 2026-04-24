@@ -24,6 +24,8 @@ interface Order {
   customerName?: string
   bakeryName?: string | null
   createdAt?: string
+  courierId?: string | null
+  courierName?: string | null
 }
 
 interface AuthState {
