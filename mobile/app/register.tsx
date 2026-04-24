@@ -122,22 +122,6 @@ export default function RegisterScreen() {
           <AnimatedLogo />
         </View>
 
-        {/* Benefits strip */}
-        <View style={styles.benefits}>
-          <View style={styles.benefitChip}>
-            <Text style={styles.benefitIcon}>🛵</Text>
-            <Text style={styles.benefitText}>Livraison{'\n'}rapide</Text>
-          </View>
-          <View style={styles.benefitChip}>
-            <Text style={styles.benefitIcon}>🎁</Text>
-            <Text style={styles.benefitText}>Régalez{'\n'}vos proches</Text>
-          </View>
-          <View style={styles.benefitChip}>
-            <Text style={styles.benefitIcon}>💰</Text>
-            <Text style={styles.benefitText}>Wallet{'\n'}Limpa</Text>
-          </View>
-        </View>
-
         {/* Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Créer un compte</Text>
@@ -231,6 +215,22 @@ export default function RegisterScreen() {
             <Text style={styles.walletText}>Un Portefeuille sera créé automatiquement.</Text>
           </View>
 
+          {/* Benefits strip */}
+          <View style={styles.benefits}>
+            <View style={styles.benefitChip}>
+              <Text style={styles.benefitIcon}>🛵</Text>
+              <Text style={styles.benefitText}>Livraison{'\n'}rapide</Text>
+            </View>
+            <View style={styles.benefitChip}>
+              <Text style={styles.benefitIcon}>🎁</Text>
+              <Text style={styles.benefitText}>Régalez{'\n'}vos proches</Text>
+            </View>
+            <View style={styles.benefitChip}>
+              <Text style={styles.benefitIcon}>💰</Text>
+              <Text style={styles.benefitText}>Wallet{'\n'}Limpa</Text>
+            </View>
+          </View>
+
           <Pressable
             style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
             onPress={handleRegister}
@@ -310,13 +310,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 10,
+    marginBottom: 14,
   },
   benefitChip: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: '#FFF8F0',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: '#F0D9C0',
     paddingVertical: 8,
     paddingHorizontal: 14,
     gap: 2,
@@ -326,7 +327,7 @@ const styles = StyleSheet.create({
   benefitText: {
     fontSize: 10,
     fontFamily: 'Outfit_600SemiBold',
-    color: 'rgba(255,255,255,0.88)',
+    color: '#C8903A',
     textAlign: 'center',
     lineHeight: 14,
   },
