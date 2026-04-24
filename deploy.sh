@@ -38,8 +38,8 @@ if [[ "$MODE" == "--update" ]]; then
   info "Recompiling backend..."
   cd "$REPO_DIR/backend"
   npm install --omit=dev
-  npx tsc
   npx prisma generate
+  npx tsc
   npx prisma db push
   pm2 restart "$PM2_NAME" || abort "PM2 process '$PM2_NAME' not found. Run --install first."
 
@@ -101,11 +101,13 @@ info "Installing backend dependencies..."
 cd "$REPO_DIR/backend"
 npm install --omit=dev
 
+info "Generating Prisma client..."
+npx prisma generate
+
 info "Compiling TypeScript..."
 npx tsc
 
 info "Running Prisma migrations..."
-npx prisma generate
 npx prisma db push
 
 info "Creating uploads directory..."

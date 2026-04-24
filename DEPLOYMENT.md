@@ -94,7 +94,8 @@ cd limpa
 ```bash
 cd /var/www/limpa/backend
 npm install
-npx tsc           # compiles src/ → dist/
+npx prisma generate   # must run BEFORE tsc — generates @prisma/client types
+npx tsc               # compiles src/ → dist/
 ```
 
 ### 4b. Create environment file
