@@ -170,6 +170,14 @@ npm run build
 
 ## 6. Build Baker/Courier Dashboard
 
+Create the production `.env` first:
+
+```bash
+echo "VITE_API_BASE=http://37.60.240.199:8082" > /var/www/limpa/dashboard/.env
+```
+
+Then build:
+
 ```bash
 cd /var/www/limpa/dashboard
 npm install

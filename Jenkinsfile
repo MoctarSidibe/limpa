@@ -39,6 +39,7 @@ pipeline {
         stage('Baker Dashboard') {
             steps {
                 sh '''
+                    echo "VITE_API_BASE=http://37.60.240.199:8082" > /var/www/limpa/dashboard/.env
                     cd /var/www/limpa/dashboard
                     npm install --omit=dev
                     npm run build
