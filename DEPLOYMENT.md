@@ -246,16 +246,16 @@ systemctl reload nginx
 
 ---
 
-## 8. Update Mobile App API URL
+## 8. Update Mobile App API URL ✅
 
-Before publishing the app, update `mobile/constants/api.ts`:
+`mobile/constants/api.ts` already points to the production server:
 
 ```ts
 export const BASE_URL = 'http://37.60.240.199:8082';
 export const API_URL  = `${BASE_URL}/api`;
 ```
 
-Then rebuild/republish the Expo app via EAS or `expo build`.
+Rebuild/republish the Expo app via EAS or `expo build` after any API change.
 
 ---
 
@@ -341,3 +341,99 @@ tail -f /var/log/nginx/access.log | grep limpa
 | Backend API (direct) | `http://37.60.240.199:5003/api` |
 | Backend API (via nginx) | `http://37.60.240.199:8082/api` |
 | Mobile app API | `http://37.60.240.199:8082/api` |
+| Jenkins | `http://37.60.240.199:8080` |
+
+---
+
+## CI/CD with Jenkins + GitHub Webhook
+
+Every push to `main` automatically pulls, rebuilds, and restarts Limpa on the server.
+
+### Step 1 — Install GitHub plugin in Jenkins
+
+1. Open `http://37.60.240.199:8080`
+2. **Manage Jenkins → Plugins → Available plugins**
+3. Search `GitHub` → install **GitHub plugin** (includes webhook support)
+4. Restart Jenkins when prompted
+
+### Step 2 — Create a Freestyle Jenkins job
+
+1. **New Item** → name it `limpa-deploy` → **Freestyle project** → OK
+2. **Source Code Management** → Git
+   - Repository URL: `https://github.com/MoctarSidibe/limpa.git`
+   - Branch: `*/main`
+   - Credentials: none (public repo)
+3. **Build Triggers** → check **GitHub hook trigger for GITScm polling**
+4. **Build Steps** → Add **Execute shell** → paste the build script below
+5. **Save**
+
+#### Build shell script (paste into Jenkins Execute shell)
+
+```bash
+#!/bin/bash
+set -e
+cd /var/www/limpa
+
+echo "=== Pulling latest code ==="
+git pull origin main
+
+echo "=== Rebuilding backend ==="
+cd backend
+npm install --omit=dev
+npx prisma generate
+npx tsc
+npx prisma db push
+pm2 restart limpa-backend
+
+echo "=== Rebuilding admin dashboard ==="
+cd /var/www/limpa/admin-dashboard
+npm install --omit=dev
+npm run build
+
+echo "=== Rebuilding baker dashboard ==="
+cd /var/www/limpa/dashboard
+npm install --omit=dev
+npm run build
+
+echo "=== Reloading nginx ==="
+nginx -t && systemctl reload nginx
+
+echo "=== Done ==="
+pm2 list | grep limpa
+```
+
+### Step 3 — Add webhook on GitHub
+
+1. Go to `https://github.com/MoctarSidibe/limpa/settings/hooks`
+2. Click **Add webhook**
+3. Fill in:
+   - **Payload URL:** `http://37.60.240.199:8080/github-webhook/`
+   - **Content type:** `application/json`
+   - **Which events:** Just the push event
+   - **Active:** ✅
+4. Click **Add webhook**
+5. GitHub sends a ping — check the green tick appears next to the webhook
+
+### Step 4 — Test the pipeline
+
+Push any small change to `main` on GitHub and watch Jenkins at `http://37.60.240.199:8080` — the `limpa-deploy` job should trigger automatically within seconds.
+
+To trigger manually:
+```bash
+# On the server or via Jenkins UI
+curl -X POST http://37.60.240.199:8080/job/limpa-deploy/build
+```
+
+### Troubleshooting webhook
+
+```bash
+# Check Jenkins received the webhook (look for POST /github-webhook/)
+tail -f /var/log/nginx/access.log
+
+# Jenkins build logs
+# → http://37.60.240.199:8080/job/limpa-deploy/lastBuild/console
+
+# If pm2 restart fails (process not found), start it first:
+pm2 start /var/www/limpa/backend/dist/index.js --name limpa-backend
+pm2 save
+```
