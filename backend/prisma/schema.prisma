@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CLIENT
+  BOULANGER
+  LIVREUR
+  BAKER
+  COURIER
+  ADMIN
+}
+
+enum Provider {
+  AIRTEL_MONEY
+  MOOV_MONEY
+  WALLET
+  POINTS
+}
+
+enum Status {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum Type {
+  PERCENTAGE
+  FIXED
+}
+
+model Bakery {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  latitude    Float
+  longitude   Float
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  users       User[]
+  orders      Order[]
+  products    Product[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  phoneNumber    String       @unique @map("phone")
+  name           String?
+  pin            String?
+  role           Role         @default(CLIENT)
+  bakeryId       String?
+  bakery         Bakery?      @relation(fields: [bakeryId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  transactions   Transaction[]
+  virtualCard    VirtualCard?
+  orders         Order[]      @relation("UserOrders")
+  courierOrders  Order[]      @relation("CourierOrders")
+  pushToken           String?
+  active              Boolean      @default(true)
+  courierLat          Float?
+  courierLng          Float?
+  courierLocationAt   DateTime?
+}
+
+model VirtualCard {
+  id             String    @id @default(uuid())
+  balance        Float     @default(0.0) 
+  points         Int       @default(0)
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Transaction {
+  id             String    @id @default(uuid())
+  amount         Float
+  provider       Provider
+  status         Status
+  reference      String?   @unique
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  createdAt      DateTime  @default(now())
+}
+
+model Coupon {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  discountValue  Float
+  discountType   Type
+  maxUses        Int?
+  usedCount      Int       @default(0)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  description String?
+  image       String?
+  category    String?
+  bakeryId    String?
+  bakery      Bakery?  @relation(fields: [bakeryId], references: [id])
+  orders      OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  READY
+  PICKED_UP
+  DELIVERED
+}
+
+enum DeliveryType {
+  PICKUP
+  PICKUP_SCHEDULED
+  DELIVERY
+  DELIVERY_SCHEDULED
+}
+
+enum Recurrence {
+  NONE
+  DAILY
+  WEEKLY
+}
+
+model Order {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation("UserOrders", fields: [userId], references: [id])
+  bakeryId       String?
+  bakery         Bakery?      @relation(fields: [bakeryId], references: [id])
+  items          OrderItem[]
+  total          Float
+  status         OrderStatus  @default(PENDING) 
+  
+  deliveryType   DeliveryType @default(PICKUP)
+  scheduledFor   DateTime?
+  recurrence     Recurrence   @default(NONE)
+  address        String?
+  pickupCode       String       @unique
+  latitude         Float?
+  longitude        Float?
+  extraFee         Float        @default(0)
+  userChoseBakery  Boolean      @default(false)
+  
+  recipientName    String?
+  recipientPhone   String?
+
+  courierId        String?
+  courier          User?        @relation("CourierOrders", fields: [courierId], references: [id])
+
+  discount         Float        @default(0)
+  couponCode       String?
+  nextRecurrenceAt DateTime?
+  groupOrderId     String?
+  nudgedAt         DateTime?
+
+  createdAt        DateTime     @default(now())
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model PlatformSettings {
+  id                    String   @id @default(uuid())
+  feePerKm              Float    @default(300)   // FCFA per extra km
+  roundingUnit          Int      @default(25)    // Round all fees to nearest N FCFA (25 = smallest Gabonese coin)
+  minFee                Int      @default(0)     // Minimum extra fee charged (0 = none)
+  alertPendingMinutes   Int      @default(15)    // Alert if order stays PENDING > N min
+  alertConfirmedMinutes Int      @default(45)    // Alert if order stays CONFIRMED > N min
+  alertPickedUpMinutes  Int      @default(90)    // Alert if PICKED_UP delivery > N min
+  pointsEarnRate        Int      @default(1)     // Points earned per 100 FCFA spent/recharged
+  pointsRedeemRate      Int      @default(10)    // FCFA per point when redeeming
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+}

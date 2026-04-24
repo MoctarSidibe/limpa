@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm install:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(curl -s http://localhost:3000/api/products)",
+      "Bash(kill %1)",
+      "Bash(curl http://localhost:3000/api/products)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const p = require\\('./node_modules/@react-native-async-storage/async-storage/package.json'\\); console.log\\(p.name, p.version\\)\")",
+      "Bash(node -e \"const p=require\\('c:/Users/user/OneDrive/Desktop/le boulanger/dashboard/package.json'\\); console.log\\('Dashboard port:', p.scripts?.dev\\)\")",
+      "Bash(grep -o \"class=\\\\\"[^\\\\\"]*\\\\\"\\\\\\\\|className=\\\\\"[^\\\\\"]*\\\\\"\")",
+      "Bash(grep -v \"^import\\\\|//\")",
+      "Bash(grep -v \"^[A-Z][A-Z]*$\")",
+      "Bash(ls:*)"
+    ]
+  }
+}
