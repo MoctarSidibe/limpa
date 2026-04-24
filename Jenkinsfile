@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        EXPO_TOKEN = credentials('expo-token')
+        EXPO_TOKEN = credentials('limpa_eas_token')
     }
 
     stages {
