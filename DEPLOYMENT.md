@@ -151,6 +151,14 @@ curl http://localhost:5003/api/products   # should return JSON
 
 ## 5. Build Admin Dashboard
 
+Create the production `.env` first (Vite bakes this at build time):
+
+```bash
+echo "VITE_API_BASE=http://37.60.240.199:8082" > /var/www/limpa/admin-dashboard/.env
+```
+
+Then build:
+
 ```bash
 cd /var/www/limpa/admin-dashboard
 npm install
@@ -347,60 +355,38 @@ tail -f /var/log/nginx/access.log | grep limpa
 
 ## CI/CD with Jenkins + GitHub Webhook
 
-Every push to `main` automatically pulls, rebuilds, and restarts Limpa on the server.
+Every push to `main` automatically pulls, rebuilds, and restarts Limpa.
+The pipeline definition lives in `Jenkinsfile` at the repo root.
 
-### Step 1 — Install GitHub plugin in Jenkins
+---
+
+### Step 1 — Install required Jenkins plugins
 
 1. Open `http://37.60.240.199:8081/jenkins/`
 2. **Manage Jenkins → Plugins → Available plugins**
-3. Search `GitHub` → install **GitHub plugin** (includes webhook support)
+3. Install both of these (search one at a time):
+   - **GitHub plugin**
+   - **Pipeline** (usually pre-installed)
 4. Restart Jenkins when prompted
 
-### Step 2 — Create a Freestyle Jenkins job
+---
 
-1. **New Item** → name it `limpa-deploy` → **Freestyle project** → OK
-2. **Source Code Management** → Git
+### Step 2 — Create a Pipeline job
+
+1. **New Item** → name it `limpa-deploy` → select **Pipeline** → OK
+2. Scroll to **Build Triggers** → check **GitHub hook trigger for GITScm polling**
+3. Scroll to **Pipeline** section:
+   - Definition: **Pipeline script from SCM**
+   - SCM: **Git**
    - Repository URL: `https://github.com/MoctarSidibe/limpa.git`
    - Branch: `*/main`
    - Credentials: none (public repo)
-3. **Build Triggers** → check **GitHub hook trigger for GITScm polling**
-4. **Build Steps** → Add **Execute shell** → paste the build script below
-5. **Save**
+   - Script Path: `Jenkinsfile`  ← leave as default
+4. Click **Save**
 
-#### Build shell script (paste into Jenkins Execute shell)
+Jenkins will now read the `Jenkinsfile` from the repo root on every build.
 
-```bash
-#!/bin/bash
-set -e
-cd /var/www/limpa
-
-echo "=== Pulling latest code ==="
-git pull origin main
-
-echo "=== Rebuilding backend ==="
-cd backend
-npm install --omit=dev
-npx prisma generate
-npx tsc
-npx prisma db push
-pm2 restart limpa-backend
-
-echo "=== Rebuilding admin dashboard ==="
-cd /var/www/limpa/admin-dashboard
-npm install --omit=dev
-npm run build
-
-echo "=== Rebuilding baker dashboard ==="
-cd /var/www/limpa/dashboard
-npm install --omit=dev
-npm run build
-
-echo "=== Reloading nginx ==="
-nginx -t && systemctl reload nginx
-
-echo "=== Done ==="
-pm2 list | grep limpa
-```
+---
 
 ### Step 3 — Add webhook on GitHub
 
@@ -412,28 +398,32 @@ pm2 list | grep limpa
    - **Which events:** Just the push event
    - **Active:** ✅
 4. Click **Add webhook**
-5. GitHub sends a ping — check the green tick appears next to the webhook
+5. GitHub sends a ping — a green tick should appear next to the webhook
 
-### Step 4 — Test the pipeline
+---
 
-Push any small change to `main` on GitHub and watch Jenkins at `http://37.60.240.199:8081/jenkins/` — the `limpa-deploy` job should trigger automatically within seconds.
+### Step 4 — Test
 
-To trigger manually:
+Push any change to `main` and watch the build at:
+`http://37.60.240.199:8081/jenkins/job/limpa-deploy/`
+
+To trigger manually from the server:
 ```bash
-# On the server or via Jenkins UI
 curl -X POST http://37.60.240.199:8081/jenkins/job/limpa-deploy/build
 ```
 
-### Troubleshooting webhook
+---
+
+### Troubleshooting
 
 ```bash
-# Check Jenkins received the webhook (look for POST /jenkins/github-webhook/)
-tail -f /var/log/nginx/access.log
-
-# Jenkins build logs
+# Jenkins build console output
 # → http://37.60.240.199:8081/jenkins/job/limpa-deploy/lastBuild/console
 
-# If pm2 restart fails (process not found), start it first:
+# If pm2 restart fails (first deploy only — process not yet registered)
 pm2 start /var/www/limpa/backend/dist/index.js --name limpa-backend
 pm2 save
+
+# Webhook not firing? Check Jenkins received it:
+# Jenkins → Manage Jenkins → System Log → look for github-webhook entries
 ```
