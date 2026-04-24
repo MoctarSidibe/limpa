@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        EXPO_TOKEN = credentials('expo-token')
+    }
+
     stages {
         stage('Pull') {
             steps {
@@ -38,6 +42,16 @@ pipeline {
                     cd /var/www/limpa/dashboard
                     npm install --omit=dev
                     npm run build
+                '''
+            }
+        }
+
+        stage('Mobile (EAS Cloud Build)') {
+            steps {
+                sh '''
+                    cd /var/www/limpa/mobile
+                    npm install --omit=dev
+                    npx eas-cli build --platform android --profile preview --non-interactive
                 '''
             }
         }
