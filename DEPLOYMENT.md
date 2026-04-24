@@ -17,7 +17,7 @@
 | 5002 | ombia-docs | PM2 |
 | 5432 | PostgreSQL | localhost only |
 | 6379 | Redis | localhost only |
-| 8080 | Jenkins | java |
+| 8080 | Jenkins | java (internal) — proxied via nginx :8081/jenkins/ |
 | 8081 | nginx | → carte_grise |
 | 8765 | Docker proxy | |
 | **5003** | **limpa-backend** | **PM2 — reserved for Limpa** |
@@ -341,7 +341,7 @@ tail -f /var/log/nginx/access.log | grep limpa
 | Backend API (direct) | `http://37.60.240.199:5003/api` |
 | Backend API (via nginx) | `http://37.60.240.199:8082/api` |
 | Mobile app API | `http://37.60.240.199:8082/api` |
-| Jenkins | `http://37.60.240.199:8080` |
+| Jenkins | `http://37.60.240.199:8081/jenkins/` |
 
 ---
 
@@ -351,7 +351,7 @@ Every push to `main` automatically pulls, rebuilds, and restarts Limpa on the se
 
 ### Step 1 — Install GitHub plugin in Jenkins
 
-1. Open `http://37.60.240.199:8080`
+1. Open `http://37.60.240.199:8081/jenkins/`
 2. **Manage Jenkins → Plugins → Available plugins**
 3. Search `GitHub` → install **GitHub plugin** (includes webhook support)
 4. Restart Jenkins when prompted
@@ -407,7 +407,7 @@ pm2 list | grep limpa
 1. Go to `https://github.com/MoctarSidibe/limpa/settings/hooks`
 2. Click **Add webhook**
 3. Fill in:
-   - **Payload URL:** `http://37.60.240.199:8080/github-webhook/`
+   - **Payload URL:** `http://37.60.240.199:8081/jenkins/github-webhook/`
    - **Content type:** `application/json`
    - **Which events:** Just the push event
    - **Active:** ✅
@@ -416,22 +416,22 @@ pm2 list | grep limpa
 
 ### Step 4 — Test the pipeline
 
-Push any small change to `main` on GitHub and watch Jenkins at `http://37.60.240.199:8080` — the `limpa-deploy` job should trigger automatically within seconds.
+Push any small change to `main` on GitHub and watch Jenkins at `http://37.60.240.199:8081/jenkins/` — the `limpa-deploy` job should trigger automatically within seconds.
 
 To trigger manually:
 ```bash
 # On the server or via Jenkins UI
-curl -X POST http://37.60.240.199:8080/job/limpa-deploy/build
+curl -X POST http://37.60.240.199:8081/jenkins/job/limpa-deploy/build
 ```
 
 ### Troubleshooting webhook
 
 ```bash
-# Check Jenkins received the webhook (look for POST /github-webhook/)
+# Check Jenkins received the webhook (look for POST /jenkins/github-webhook/)
 tail -f /var/log/nginx/access.log
 
 # Jenkins build logs
-# → http://37.60.240.199:8080/job/limpa-deploy/lastBuild/console
+# → http://37.60.240.199:8081/jenkins/job/limpa-deploy/lastBuild/console
 
 # If pm2 restart fails (process not found), start it first:
 pm2 start /var/www/limpa/backend/dist/index.js --name limpa-backend
