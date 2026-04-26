@@ -33,7 +33,7 @@ pipeline {
                 sh '''
                     echo "VITE_API_BASE=http://37.60.240.199:8082" > /var/www/limpa/admin-dashboard/.env
                     cd /var/www/limpa/admin-dashboard
-                    npm install --omit=dev
+                    npm install
                     npm run build
                 '''
             }
@@ -44,7 +44,7 @@ pipeline {
                 sh '''
                     echo "VITE_API_BASE=http://37.60.240.199:8082" > /var/www/limpa/dashboard/.env
                     cd /var/www/limpa/dashboard
-                    npm install --omit=dev
+                    npm install
                     npm run build
                 '''
             }
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 sh '''
                     cd /var/www/limpa/mobile
-                    npm install --omit=dev
+                    npm install
                     npx eas-cli build --platform android --profile preview --non-interactive
                 '''
             }
