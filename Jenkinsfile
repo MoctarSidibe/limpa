@@ -23,7 +23,7 @@ pipeline {
                     npx prisma generate
                     npx tsc
                     npx prisma db push
-                    pm2 restart limpa-backend
+                    sudo pm2 restart limpa-backend
                 '''
             }
         }
@@ -62,7 +62,7 @@ pipeline {
 
         stage('Reload Nginx') {
             steps {
-                sh 'nginx -t && systemctl reload nginx'
+                sh 'sudo nginx -t && sudo systemctl reload nginx'
             }
         }
     }
@@ -70,7 +70,7 @@ pipeline {
     post {
         success {
             echo 'Limpa deployed successfully.'
-            sh 'pm2 list | grep limpa'
+            sh 'sudo pm2 list | grep limpa'
         }
         failure {
             echo 'Deployment failed — check console output above.'
