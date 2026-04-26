@@ -839,3 +839,191 @@ html, body, #root {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ──────────────── MOBILE TOPBAR ──────────────── */
+.mobile-topbar {
+  display: none;
+}
+
+/* ──────────────── HAMBURGER ──────────────── */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ──────────────── SIDEBAR OVERLAY ──────────────── */
+.sidebar-overlay {
+  display: none;
+}
+
+/* ──────────────── STATUS DOT ──────────────── */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-online { background: var(--green); }
+.status-dot-offline { background: var(--red); animation: pulse-red 2s ease-in-out infinite; }
+
+/* ──────────────── RESPONSIVE ──────────────── */
+@media (max-width: 768px) {
+  /* App layout: column instead of row */
+  .app {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  /* Show mobile topbar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--sidebar);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .mobile-topbar-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFDF9;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hamburger-btn {
+    display: flex;
+  }
+
+  /* Sidebar: hidden by default, slides in as overlay */
+  .sidebar {
+    position: fixed;
+    left: -380px;
+    top: 0;
+    height: 100vh;
+    width: 340px;
+    min-width: 340px;
+    z-index: 200;
+    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+  }
+
+  .app.sidebar-open .sidebar {
+    left: 0;
+    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Overlay */
+  .app.sidebar-open .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 150;
+    animation: fadeInOverlay 0.2s;
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Main panel: full width, doesn't overflow */
+  .main {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* KPI bar: horizontal scroll on small screens */
+  .kpi-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .kpi-card {
+    min-width: 110px;
+    flex: 0 0 auto;
+    padding: 10px 12px;
+  }
+
+  .kpi-value {
+    font-size: 16px;
+  }
+
+  .kpi-label {
+    font-size: 10px;
+  }
+
+  /* Orders header */
+  .orders-header {
+    padding: 12px 16px 10px;
+  }
+
+  .orders-title {
+    font-size: 18px;
+  }
+
+  /* Tabs */
+  .dash-tabs {
+    padding: 0 12px;
+  }
+
+  .dash-tab {
+    font-size: 12px;
+    padding: 12px 8px;
+  }
+
+  /* Orders scroll */
+  .orders-scroll {
+    padding: 16px 12px 24px;
+  }
+
+  /* Order grid: 1 or 2 columns based on width */
+  .order-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  /* Login card */
+  .login-card {
+    padding: 32px 20px;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-bar {
+    padding: 10px 12px;
+  }
+
+  .orders-scroll {
+    padding: 12px 10px 20px;
+  }
+}

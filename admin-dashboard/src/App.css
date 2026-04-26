@@ -762,3 +762,170 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+/* ── Hamburger Button (hidden on desktop) ── */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+/* ── Sidebar overlay (mobile) ── */
+.sidebar-overlay {
+  display: none;
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 768px) {
+  /* Show hamburger */
+  .hamburger-btn {
+    display: flex;
+  }
+
+  /* Sidebar becomes a fixed left drawer */
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 200;
+    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .app-container.sidebar-open .sidebar {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Overlay visible when sidebar open */
+  .app-container.sidebar-open .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 150;
+    animation: fadeIn 0.2s;
+  }
+
+  /* Main content always full width */
+  .main-content {
+    width: 100%;
+  }
+
+  /* Topbar: tighter on mobile */
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .topbar h2 {
+    font-size: 16px;
+  }
+
+  /* Content wrapper: reduce padding */
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  /* Two-col → single column */
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Section header: stack on very small screens */
+  .section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Filter bar: stack vertically */
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar select,
+  .filter-bar input[type="date"],
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-group input {
+    width: 100%;
+  }
+
+  /* Tables: horizontal scroll wrapper */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 560px;
+  }
+
+  /* KPI cards: already has grid breakpoints, but ensure 2-col on mobile */
+  .kpi-grid-3,
+  .kpi-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Modal: full-width on mobile */
+  .modal {
+    margin: 12px;
+    padding: 20px;
+    border-radius: 16px;
+    max-width: calc(100vw - 24px);
+  }
+
+  /* Login card: full-width */
+  .login-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+    margin: 16px;
+  }
+
+  /* Action buttons: allow wrapping */
+  .action-btns {
+    flex-wrap: wrap;
+  }
+
+  /* Alert banner: stack on mobile */
+  .alert-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .alert-details {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid-3,
+  .kpi-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card {
+    padding: 16px;
+  }
+
+  .kpi-value {
+    font-size: 22px;
+  }
+
+  .topbar h2 {
+    font-size: 14px;
+  }
+}

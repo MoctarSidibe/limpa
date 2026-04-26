@@ -5,7 +5,7 @@ import {
   Plus, TrendingUp, Package, RefreshCw, Layers, LogOut,
   Search, Eye, UserPlus, ToggleLeft, ToggleRight, Pencil,
   Trash2, AlertTriangle, MapPin, CheckCircle2, X, Tag, Settings,
-  Clock, Bike, CheckCheck, CircleDot,
+  Clock, Bike, CheckCheck, CircleDot, Menu,
 } from 'lucide-react';
 
 const SERVER_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'http://localhost:3000';
@@ -1770,6 +1770,7 @@ function PointsTab({ token }: { token: string }) {
 export default function App() {
   const [auth, setAuth] = useState<AuthState | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!auth) return <AdminLogin onAuth={setAuth} />;
 
@@ -1799,8 +1800,15 @@ export default function App() {
     points:   'Gestion des Points Fidélité',
   };
 
+  const handleNavClick = (key: Tab) => {
+    setActiveTab(key);
+    setSidebarOpen(false);
+  };
+
   return (
-    <div className="app-container">
+    <div className={`app-container${sidebarOpen ? ' sidebar-open' : ''}`}>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+
       <nav className="sidebar">
         <div className="brand">
           <div className="brand-icon"><Layers size={24} strokeWidth={2} /></div>
@@ -1809,7 +1817,7 @@ export default function App() {
 
         <div className="nav-links">
           {tabs.map(t => (
-            <button key={t.key} className={`nav-btn ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
+            <button key={t.key} className={`nav-btn ${activeTab === t.key ? 'active' : ''}`} onClick={() => handleNavClick(t.key)}>
               {t.icon} {t.label}
             </button>
           ))}
@@ -1825,6 +1833,9 @@ export default function App() {
 
       <main className="main-content">
         <header className="topbar">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Menu">
+            {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
           <h2>{tabTitles[activeTab]}</h2>
         </header>
         <div className="content-wrapper">

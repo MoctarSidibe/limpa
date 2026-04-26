@@ -5,7 +5,7 @@ import {
   CheckCircle2, WifiOff, ScanLine, Clock, Repeat,
   MapPin, RefreshCw, Package, User, TrendingUp,
   ChefHat, Wifi, LogOut, ShoppingBag, AlarmClock,
-  Upload, ShieldAlert, Building2,
+  Upload, ShieldAlert, Building2, Menu, X,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -540,6 +540,7 @@ function Dashboard({ auth, onLogout }: { auth: AuthState; onLogout: () => void }
   const [validatingId, setValidatingId] = useState<string | null>(null)
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set())
   const [statsRevenue, setStatsRevenue] = useState<number | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const hdrs = authHeaders(auth.token)
@@ -721,7 +722,9 @@ function Dashboard({ auth, onLogout }: { auth: AuthState; onLogout: () => void }
   const deliveryCount = orders.filter(o => o.deliveryType.includes('DELIVERY')).length
 
   return (
-    <div className="app">
+    <div className={`app${sidebarOpen ? ' sidebar-open' : ''}`}>
+
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
 
       {/* ── SIDEBAR (35%) ── */}
       <div className="sidebar">
@@ -793,6 +796,15 @@ function Dashboard({ auth, onLogout }: { auth: AuthState; onLogout: () => void }
 
       {/* ── MAIN PANEL (65%) ── */}
       <div className="main">
+
+        {/* Mobile top bar */}
+        <div className="mobile-topbar">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Menu scanner">
+            {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+          <span className="mobile-topbar-title">LIMPA — {auth.bakeryName}</span>
+          <div className={`status-dot ${isOffline ? 'status-dot-offline' : 'status-dot-online'}`} />
+        </div>
 
         <div className="kpi-bar">
           <div className="kpi-card">
