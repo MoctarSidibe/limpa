@@ -52,6 +52,7 @@ pipeline {
                     cd /var/www/limpa/mobile
                     npm install --legacy-peer-deps
                     chmod +x android/gradlew
+                    echo "sdk.dir=/opt/android-sdk" > android/local.properties
                     cd android && ./gradlew assembleRelease --no-daemon --max-workers=2 --warning-mode none -Dkotlin.incremental=false
                 '''
             }
