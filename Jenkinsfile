@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        EXPO_TOKEN = credentials('limpa_eas_token')
-    }
-
     stages {
         stage('Pull') {
             steps {
@@ -50,13 +46,26 @@ pipeline {
             }
         }
 
-        stage('Mobile (EAS Cloud Build)') {
+        stage('Mobile (Local Gradle Build)') {
             steps {
                 sh '''
                     cd /var/www/limpa/mobile
-                    npm install
-                    npx eas-cli build --platform android --profile preview --non-interactive
+                    npm install --legacy-peer-deps
+                    chmod +x android/gradlew
+                    cd android && ./gradlew assembleRelease --no-daemon --max-workers=2 --warning-mode none -Dkotlin.incremental=false
                 '''
+            }
+        }
+
+        stage('Publish APK') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        mkdir -p /var/www/limpa/downloads
+                        cp /var/www/limpa/mobile/android/app/build/outputs/apk/release/app-release.apk /var/www/limpa/downloads/limpa.apk
+                        echo "APK published → http://37.60.240.199:8082/downloads/limpa.apk"
+                    '''
+                }
             }
         }
 
@@ -71,6 +80,8 @@ pipeline {
         success {
             echo 'Limpa deployed successfully.'
             sh 'sudo pm2 list | grep limpa'
+            archiveArtifacts artifacts: 'mobile/android/app/build/outputs/apk/release/app-release.apk', allowEmptyArchive: true
+            echo 'APK ready → http://37.60.240.199:8082/downloads/limpa.apk'
         }
         failure {
             echo 'Deployment failed — check console output above.'

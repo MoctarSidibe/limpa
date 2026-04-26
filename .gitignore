@@ -25,7 +25,6 @@ backend/node_modules/
 # Expo / React Native
 mobile/.expo/
 mobile/node_modules/
-mobile/android/
 mobile/ios/
 
 # Logs
