@@ -8,7 +8,10 @@ pipeline {
     stages {
         stage('Pull') {
             steps {
-                sh 'cd /var/www/limpa && git pull origin main'
+                sh '''
+                    git config --global --add safe.directory /var/www/limpa
+                    cd /var/www/limpa && git pull origin main
+                '''
             }
         }
 
